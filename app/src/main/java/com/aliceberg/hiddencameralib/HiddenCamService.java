@@ -3,9 +3,7 @@ package com.aliceberg.hiddencameralib;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -28,8 +26,8 @@ import com.androidhiddencamera.config.CameraRotation;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 
 public class HiddenCamService extends HiddenCameraService {
     @Nullable
@@ -55,14 +53,13 @@ public class HiddenCamService extends HiddenCameraService {
                         .setImageRotation(CameraRotation.ROTATION_270)
                         .build();
 
-                startCamera(cameraConfig);
+                startCamera(cameraConfig); // when this function is called we cannot open camera until it finishes
 
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         Toast.makeText(HiddenCamService.this,
-                                "Capturing image.", Toast.LENGTH_SHORT).show();
-
+                                "Capturing image.", Toast.LENGTH_LONG).show();
                         takePicture();
                     }
                 }, 2000L);
