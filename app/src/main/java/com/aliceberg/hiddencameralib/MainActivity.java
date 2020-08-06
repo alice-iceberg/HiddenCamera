@@ -37,23 +37,28 @@ public class MainActivity extends AppCompatActivity {
     private CameraManager mCameraManager;
     private Object mCameraCallback;
 
-    Handler cameraHandler;
+    private String IS_CAMERA_AVAILABLE = "isCameraAvailable";
 
-    Boolean isCameraAvailable = false;
+    Handler cameraHandler;
     Button button;
+
+    SharedPreferences cameraPrefs;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        cameraPrefs = getSharedPreferences("cameraPrefs", MODE_PRIVATE);
+
         button = (Button) findViewById(R.id.btn);
 
         requestPermissions(new String[]{Manifest.permission.CAMERA}, 101);
         requestPermissions(new String[]{Manifest.permission.SYSTEM_ALERT_WINDOW}, 102);
 
-        SharedPreferences.Editor editor = getSharedPreferences("cameraPrefs", MODE_PRIVATE).edit();
-        editor.putBoolean("isCameraAvailable", isCameraAvailable);
+        final SharedPreferences.Editor editor = cameraPrefs.edit();
+        editor.putBoolean(IS_CAMERA_AVAILABLE, false); //false is default
         editor.apply();
 
         mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
@@ -63,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
             public void onCameraAvailable(String cameraId) {
                 super.onCameraAvailable(cameraId);
                 //Do your work
+                editor.putBoolean(IS_CAMERA_AVAILABLE, true);
+                editor.apply();
                 Log.e("TAG", "OFF");
             }
 
@@ -70,7 +77,8 @@ public class MainActivity extends AppCompatActivity {
             public void onCameraUnavailable(String cameraId) {
                 super.onCameraUnavailable(cameraId);
                 //Do your work
-
+                editor.putBoolean(IS_CAMERA_AVAILABLE, false);
+                editor.apply();
                 Log.e("TAG", "ON");
             }
         };
@@ -80,7 +88,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void btnClick(View view) {
 
-
+        boolean isCameraAvailable = cameraPrefs.getBoolean(IS_CAMERA_AVAILABLE, false);
+        if(isCameraAvailable){
+            startService(new Intent( MainActivity.this, HiddenCameraService.class));
+        }else{
+            Log.e("TAG", "Camera is not available");
+        }
     }
 
     @Override
